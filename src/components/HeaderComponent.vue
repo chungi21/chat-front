@@ -10,12 +10,12 @@
                 <v-col class="text-center">
                     <v-btn :to="{path:'/'}">chat 서비스</v-btn>
                 </v-col>
+
+                <v-col class="d-flex justify-end">
                     <v-btn v-if="isLogin" :to="{path:'/my/chat/page'}">MyChatPage</v-btn>
                     <v-btn v-if="!isLogin" :to="{path:'/member/create'}">회원가입</v-btn>
                     <v-btn v-if="!isLogin" :to="{path:'/login'}">로그인</v-btn>
                     <v-btn v-if="isLogin" @click="doLogout">로그아웃</v-btn>
-                <v-col class="d-flex justify-end">
-
                 </v-col>
             </v-row>
         </v-container>
@@ -36,7 +36,7 @@ export default {
         }
     },methods:{
         doLogout(){
-            localStorage.clear;
+            localStorage.clear();
             window.location.reload();
         }   
     }   

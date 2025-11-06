@@ -64,7 +64,7 @@ import axios from "axios";
                     email : this.email,
                     password : this.password
                 };
-                await axios.post("http://localhost:8080/member/create", data);
+                await axios.post(`${process.env.VUE_APP_API_URL}/member/create`, data);
                 this.$router.push("/");
             }   
         }
