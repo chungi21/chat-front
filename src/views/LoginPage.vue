@@ -36,6 +36,7 @@
 </template>
 <script>
     import axios from "axios";
+    import { jwtDecode } from "jwt-decode";
 
     export default {
 
@@ -62,6 +63,13 @@
                 // 받아온 token localStorage에 저장
                 const token = response.data.token; 
                 localStorage.setItem("token", token);
+
+                // 사용자 정보 디코딩 후 localStorage에 저장
+                const role = jwtDecode(token).role;
+                const email = jwtDecode(token).sub;
+                
+                localStorage.setItem("role", role);
+                localStorage.setItem("email", email);
 
                 // 메인 페이지로 이동
                 this.$router.push("/").then(() => {
