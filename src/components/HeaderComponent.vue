@@ -4,7 +4,7 @@
             <v-row align="center">
                 <v-col class="d-flex justify-start">
                     <v-btn :to="{path:'/member/list'}">회원 목록</v-btn>
-                    <v-btn :to="{path:'/groupchatting/list'}">채팅방 목록</v-btn>
+                    <v-btn :to="{path:'/chat/group/list'}">채팅방 목록</v-btn>
                 </v-col>
 
                 <v-col class="text-center">

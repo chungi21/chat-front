@@ -38,13 +38,14 @@
                 newMessage: '',
                 stompClient : null,
                 token : "",
-                senderEmail : ""
+                senderEmail : "",
+                roomId : null
             }
         },
 
         created(){
             this.senderEmail = localStorage.getItem("email");
-            console.log("senderEmail : ", this.senderEmail);
+            this.roomId = this.$route.params.roomId;
             this.connectWebSocket();
         },
 
@@ -71,7 +72,7 @@
                 }, () => {
                     console.log('Stomp 연결 성공');
 
-                    this.stompClient.subscribe(`/topic/1`, (message) => {
+                    this.stompClient.subscribe(`/topic/${this.roomId}`, (message) => {
                         const parsedMessage = JSON.parse(message.body);
                         this.messages.push(parsedMessage);
                         this.scrollToBottom();
@@ -86,7 +87,7 @@
                     message : this.newMessage
                 }
 
-                this.stompClient.send(`/publish/1`, JSON.stringify(message));
+                this.stompClient.send(`/publish/${this.roomId}`, JSON.stringify(message));
                 this.newMessage = '';
             },
 
@@ -99,7 +100,7 @@
 
             disconnectWebSocket() {
                 if (this.stompClient && this.stompClient.connected) {
-                    this.stompClient.unsubscribe(`/topic/1`);
+                    this.stompClient.unsubscribe(`/topic/${this.roomId}`);
                     this.stompClient.disconnect();
                     this.stompClient = null;
                 }
