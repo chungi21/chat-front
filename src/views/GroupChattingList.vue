@@ -76,17 +76,14 @@
         methods: {
             async joinChatRoom(roomId){
                 await axios.post(`${process.env.VUE_APP_API_URL}/chat/room/group/${roomId}/join`);
-                this.$router.push({path:`/chatpage/${roomId}`, query:{roomId:roomId}});
+                this.$router.push({path:`/chatpage/${roomId}`});
             },
 
             async createChatRoom(){
-                await axios.post(`${process.env.VUE_APP_API_URL}/chat/room/group/create?roomName=${this.newRoomTitle}`, null);
+                await axios.post(`${process.env.VUE_APP_API_URL}/chat/room/group/create?roomName=${this.newRoomTitle}`,null);
                 this.showCreateRoomModal = false;
                 this.loadChatRooms();
             },
-
-            
-// /room/group/create
 
             async loadChatRooms(){
                 const response = await axios.get(`${process.env.VUE_APP_API_URL}/chat/room/group/list`);

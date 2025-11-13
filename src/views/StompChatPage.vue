@@ -29,7 +29,7 @@
 <script> 
     import SockJS from "sockjs-client";
     import Stomp from "webstomp-client";
-    // import axios from "axios";
+    import axios from "axios";
 
     export default {
         data(){
@@ -43,10 +43,19 @@
             }
         },
 
-        created(){
+        async created(){
+            // 메세지 보낼 때 사용자 이메일
             this.senderEmail = localStorage.getItem("email");
+
+            // room id 파라미터 받아오기
             this.roomId = this.$route.params.roomId;
+
+            // 이전 메세지가져오기
+            const response = await axios.get(`${process.env.VUE_APP_API_URL}/chat/history/${this.roomId}`);
+            this.messages = response.data;   
+
             this.connectWebSocket();
+
         },
 
         beforeRouteLeave(to, from, next) {
@@ -70,13 +79,11 @@
                 this.stompClient.connect({
                     Authorization : `Bearer ${this.token}`
                 }, () => {
-                    console.log('Stomp 연결 성공');
-
                     this.stompClient.subscribe(`/topic/${this.roomId}`, (message) => {
                         const parsedMessage = JSON.parse(message.body);
                         this.messages.push(parsedMessage);
                         this.scrollToBottom();
-                    });
+                    },{Authorization : `Bearer ${this.token}`});
                 });
             },
             
