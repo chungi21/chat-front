@@ -11,7 +11,10 @@
                             :key="index"
                             :class="['chat-message', msg.senderEmail === this.senderEmail ? 'sent' : 'received']"
                             >
-                                <strong>{{ msg.senderEmail }}:</strong> {{ msg.message }}
+                                <strong>{{ msg.senderEmail }}</strong><br>
+                                <span class="message">
+                                    {{ msg.message }}
+                                </span>
                             </div>
                         </div>
                         <v-text-field
@@ -27,116 +30,118 @@
     </v-container>
 </template>
 <script> 
-    import SockJS from "sockjs-client";
-    import Stomp from "webstomp-client";
-    import axios from "axios";
+  import SockJS from "sockjs-client";
+  import Stomp from "webstomp-client";
 
-    export default {
-        data(){
-            return {
-                messages: [],
-                newMessage: '',
-                stompClient : null,
-                token : "",
-                senderEmail : "",
-                roomId : null
-            }
-        },
+  export default {
+    data() {
+      return {
+        messages: [],
+        newMessage: '',
+        stompClient: null,
+        token: '',
+        senderEmail: '',
+        roomId: null
+      };
+    },
 
-        async created(){
-            // 메세지 보낼 때 사용자 이메일
-            this.senderEmail = localStorage.getItem("email");
+    async created() {
+      try {
+        // 메세지 보낼 때 사용자 이메일
+        this.senderEmail = localStorage.getItem('email');
 
-            // room id 파라미터 받아오기
-            this.roomId = this.$route.params.roomId;
+        // room id 파라미터 받아오기
+        this.roomId = this.$route.params.roomId;
 
-            // 이전 메세지가져오기
-            const response = await axios.get(`${process.env.VUE_APP_API_URL}/chat/history/${this.roomId}`);
-            this.messages = response.data;   
+        // 이전 메세지 가져오기 (인터셉터 + try/catch)
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/chat/history/${this.roomId}`
+        );
+        this.messages = response.data;
 
-            this.connectWebSocket();
+        // 웹소켓 연결
+        this.connectWebSocket();
+      } catch (error) {
+        console.error('채팅방 초기 데이터 로딩 중 오류:', error);
+        // 인터셉터에서 처리됨
+      }
+    },
 
-        },
+    beforeRouteLeave(to, from, next) {
+      this.disconnectWebSocket();
+      next();
+    },
 
-        beforeRouteLeave(to, from, next) {
-            this.disconnectWebSocket();
-            next();
-        },
+    beforeUnmount() {
+      this.disconnectWebSocket();
+    },
 
-        beforeUnmount() {
-            this.disconnectWebSocket();
-        },
+    methods: {
+      connectWebSocket() {
+        if (this.stompClient && this.stompClient.connected) return;
 
-        methods: {
-            connectWebSocket() {
-                if(this.stompClient && this.stompClient.connected) return;
+        const sockJs = new SockJS(`${process.env.VUE_APP_API_URL}/connect`);
+        this.stompClient = Stomp.over(sockJs);
+        this.token = localStorage.getItem('token');
 
-                // sockJs는 webSocket을 내장한 향상된 js 라이브러리. http 엔드포인트 사용.
-                const sockJs = new SockJS(`${process.env.VUE_APP_API_URL}/connect`);
-                this.stompClient = Stomp.over(sockJs);
-                this.token = localStorage.getItem("token");
+        this.stompClient.connect(
+          {
+            Authorization: `Bearer ${this.token}`
+          },
+          () => {
+            this.stompClient.subscribe(
+              `/topic/${this.roomId}`,
+              message => {
+                const parsedMessage = JSON.parse(message.body);
+                this.messages.push(parsedMessage);
+                this.scrollToBottom();
+              },
+              { Authorization: `Bearer ${this.token}` }
+            );
+          }
+        );
+      },
 
-                this.stompClient.connect({
-                    Authorization : `Bearer ${this.token}`
-                }, () => {
-                    this.stompClient.subscribe(`/topic/${this.roomId}`, (message) => {
-                        const parsedMessage = JSON.parse(message.body);
-                        this.messages.push(parsedMessage);
-                        this.scrollToBottom();
-                    },{Authorization : `Bearer ${this.token}`});
-                });
-            },
-            
-            sendMessage() {
-                if(this.newMessage.trim() === '') return;
-                const message = {
-                    senderEmail : this.senderEmail,
-                    message : this.newMessage
-                }
+      sendMessage() {
+        if (this.newMessage.trim() === '') return;
 
-                this.stompClient.send(`/publish/${this.roomId}`, JSON.stringify(message));
-                this.newMessage = '';
-            },
+        const message = {
+          senderEmail: this.senderEmail,
+          message: this.newMessage
+        };
 
-            scrollToBottom() {
-                this.$nextTick(() => {
-                    const chatBox = this.$el.querySelector('.chat-box');
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                });
-            },
+        this.stompClient.send(
+          `/publish/${this.roomId}`,
+          JSON.stringify(message)
+        );
+        this.newMessage = '';
+      },
 
-            async disconnectWebSocket() {
-                await axios.post(`${process.env.VUE_APP_API_URL}/chat/room/${this.roomId}/read`);
+      scrollToBottom() {
+        this.$nextTick(() => {
+          const chatBox = this.$el.querySelector('.chat-box');
+          if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+          }
+        });
+      },
 
-                if (this.stompClient && this.stompClient.connected) {
-                    this.stompClient.unsubscribe(`/topic/${this.roomId}`);
-                    this.stompClient.disconnect();
-                    this.stompClient = null;
-                }
-            }   
+      async disconnectWebSocket() {
+        try {
+          await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/chat/room/${this.roomId}/read`
+          );
+        } catch (error) {
+          console.error('읽음 처리 API 호출 중 오류:', error);
+          // 인터셉터에서 처리됨
+        } finally {
+          if (this.stompClient && this.stompClient.connected) {
+            this.stompClient.disconnect();
+            this.stompClient = null;
+          }
         }
+      }
     }
+  };
 
 </script>
-
-<style>
-.chat-box {
-    height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.chat-message {
-    margin-bottom: 8px;
-}
-
-.sent {
-    text-align: right;
-}
-
-.received {
-    text-align: left;
-}
-</style>

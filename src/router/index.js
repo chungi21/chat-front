@@ -6,8 +6,14 @@ import SimpleWebsocket from "@/views/SimpleWebsocket.vue";
 import StompChatPage from "@/views/StompChatPage.vue";
 import GroupChattingList from "@/views/GroupChattingList.vue";
 import MyChatPage from "@/views/MyChatPage.vue";
+import MainPage from "@/views/MainPage.vue";
 
 const routes = [
+    {
+        path: '/',
+        name: 'MainPage',
+        component: MainPage  
+    },
     {
         path: '/member/create',
         name: 'MemberCreate',
@@ -43,7 +49,7 @@ const routes = [
         name: 'MyChatPage',
         component : MyChatPage
     }
-]
+];
 
 const router = createRouter({
     routes,

@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-row justify="center">
-            <v-col cols="12" sm="4" md="6">
+            <v-col cols="12" md="6">
 
                 <v-card>
                     <v-card-title class="text-h5 text-ceter" >
@@ -57,7 +57,7 @@
                     email : this.email,
                     password : this.password
                 };
-
+                console.log(`${process.env.VUE_APP_API_URL}/member/doLogin`);   
                 const response = await axios.post(`${process.env.VUE_APP_API_URL}/member/doLogin`, loginData);
 
                 // 받아온 token localStorage에 저장

@@ -1,31 +1,22 @@
 <template>
     <v-container>
-        <v-row>
-            <v-col>
+        <v-row justify="center">
+            <v-col cols="12" md="8">
                 <v-card>
-                    <v-card-title class="text-center text-h5">
-                        채팅방 목록
-                        <div class="d-flex justify-end">
-                            <v-btn color="secondary"  @click="showCreateRoomModal = true">
-                                오픈 채팅방 생성
-                            </v-btn>
-                        </div>
+                    <v-card-title class="text-h5 d-flex justify-space-between align-center">
+                        오픈 채팅방 목록
+                        <v-btn color="secondary"  @click="showCreateRoomModal = true">
+                            오픈 채팅방 만들기
+                        </v-btn>
                     </v-card-title>
                     <v-card-text>
                         <v-table>
-                            <thead>
-                                <th>방 번호</th>
-                                <th>방 제목</th>
-                                <th>채팅</th>
-                            </thead>
-                            <tbody class="text-center">
+                            <tbody class="">
                                 <tr v-for="chat in chatRoomList" :key="chat.roomId">
-                                    <td>{{ chat.roomId }}</td>
                                     <td>{{ chat.roomName }}</td>
-                                    <td>
+                                    <td class="fixed-col1">
                                         <v-btn color="primary" @click="joinChatRoom(chat.roomId)">
-                                             <!--  -->
-                                        참여하기
+                                        참여하기 <v-icon>mdi-account-plus</v-icon>
                                         </v-btn>
                                     </td>
                                 </tr>
@@ -42,7 +33,8 @@
                     오픈 채팅방 제목
                 </v-card-title>
                 <v-card-text>
-                    <v-text-field v-model="newRoomTitle" label="채팅방 제목을 입력하세요"></v-text-field>
+                    <v-text-field v-model="newRoomTitle" label="채팅방 제목을 입력하세요"     maxlength="15"
+    counter="15"></v-text-field>
                 </v-card-text>
                 <v-card-actions>
                     <v-btn color="primary" @click="createChatRoom()">생성</v-btn>
@@ -51,46 +43,66 @@
             </v-card>
         </v-dialog>
 
-
-
     </v-container>
 </template>
 
 <script>
-    import axios from "axios";
 
-    export default {
+export default {
 
-        data(){
-            return {
-                chatRoomList : [],
-                showCreateRoomModal : false,
-                newRoomTitle : ''
-            }
-        },
-
-        async created(){
-            this.loadChatRooms();
-        },
-
-        methods: {
-            async joinChatRoom(roomId){
-                await axios.post(`${process.env.VUE_APP_API_URL}/chat/room/group/${roomId}/join`);
-                this.$router.push({path:`/chatpage/${roomId}`});
-            },
-
-            async createChatRoom(){
-                await axios.post(`${process.env.VUE_APP_API_URL}/chat/room/group/create?roomName=${this.newRoomTitle}`,null);
-                this.showCreateRoomModal = false;
-                this.loadChatRooms();
-            },
-
-            async loadChatRooms(){
-                const response = await axios.get(`${process.env.VUE_APP_API_URL}/chat/room/group/list`);
-                this.chatRoomList = response.data;
-            }
-
+    data(){
+        return {
+            chatRoomList : [],
+            showCreateRoomModal : false,
+            newRoomTitle : ''
         }
+    },
 
+    async created(){
+        this.loadChatRooms();
+    },
+
+    methods: {
+
+async joinChatRoom(roomId) {
+  try {
+    await this.$axios.post(
+      `${process.env.VUE_APP_API_URL}/chat/room/group/${roomId}/join`
+    );
+    this.$router.push({ path: `/chatpage/${roomId}` });
+  } catch (error) {
+    // 인터셉터에서 처리됨
+  }
+},
+
+async createChatRoom() {
+  try {
+    await this.$axios.post(
+      `${process.env.VUE_APP_API_URL}/chat/room/group/create?roomName=${this.newRoomTitle}`,
+      null
+    );
+    this.showCreateRoomModal = false;
+    this.loadChatRooms();
+  } catch (error) {
+    // 인터셉터에서 처리됨
+  }
+},
+
+
+async loadChatRooms() {
+  try {
+    const response = await this.$axios.get(
+      `${process.env.VUE_APP_API_URL}/chat/room/group/list`
+    );
+    this.chatRoomList = response.data;
+  } catch (error) {
+    // 인터셉터에서 처리됨
+  }
+}
+
+        
     }
+
+}
 </script>
+

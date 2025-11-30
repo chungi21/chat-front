@@ -1,0 +1,97 @@
+.align-left {
+  text-align: left !important;
+}
+
+.align-right {
+  text-align: right !important;
+}
+
+/* 마지막 열 고정 너비 */
+.fixed-col1 {
+    width: 90px;
+}
+
+.fixed-col2 {
+    width: 182px;
+}
+
+/* 테이블이 fixed width 강제로 줄어들 경우 깨지는 것 방지 */
+.v-table th,
+.v-table td {
+    white-space: nowrap;
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr > td{
+    padding: 0px;
+}
+
+.no-read {
+    border:1px solid red;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    text-align: center;
+    line-height: 15px;
+    background-color: red;
+    color: white;
+}
+
+.isgroup {
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-size: 10px;
+    background-color: #eee;
+}
+
+.isgroup.group {
+    background-color: #FEE500;
+    border: 1px solid #FEE500;
+    color: black;
+}
+
+.chat-box {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-box {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-message {
+    margin-bottom: 8px;
+}
+
+.sent {
+    text-align: right;
+}
+
+.received {
+    text-align: left;
+}
+
+.chat-message .message{
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.chat-message.sent .message{
+    background-color: #FEE500;
+    border: 1px solid #FEE500;
+}
+
+.chat-message.received .message{
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
